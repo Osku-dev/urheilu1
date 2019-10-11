@@ -1,0 +1,184 @@
+const express = require('express');
+const mysql = require('mysql');
+const cors = require('cors');
+//const morgan = require('morgan');
+const bodyParser = require('body-parser');
+
+var app = express();
+app.use(cors());
+//app.use(morgan('combined'));
+
+app.use(bodyParser.urlencoded({extended:false}));
+
+// Create connection 
+const db = mysql.createConnection({
+    host : 'localhost',
+    user : 'root',
+    password :'root',
+    database : 'db'
+});
+
+db.connect((err) =>{
+    if (err) {
+        throw err;
+        
+    }
+
+    console.log('MySql connected..')
+
+});
+
+//const app = express();
+
+//create table
+app.get('/createtable', (req,res) => {
+let sql = 'CREATE TABLE posts(id int AUTO_INCREMENT,title VARCHAR(255),body VARCHAR(255), PRIMARY KEY (id))';
+db.query(sql,(err,result) => {
+    if(err) throw err;
+    console.log(result);
+    res.send('posts table created..');
+
+});
+
+});
+
+//insert
+app.get('/addpost',(req,res) => {
+    let post = {title:'Post one', body:'this is post number one'};
+    let sql = 'INSERT INTO posts SET ?';
+    let query = db.query(sql, post, (err, result) => {
+        if(err) throw err;
+        console.log(result);
+        res.send('Post 1 added..');
+
+    });
+});
+
+app.get('/addpost2',(req,res) => {
+    let post = {title:'Post two',body:'this is post number two'};
+    let sql = 'INSERT INTO posts SET ?';
+    let query = db.query(sql, post, (err, result) => {
+        if(err) throw err;
+        console.log(result);
+        res.send('Post 2 added..');
+
+    });
+});
+
+app.get('/getpost',(req,res) => {
+   
+    let sql = 'SELECT * FROM posts';
+    let query = db.query(sql, (err, result) => {
+        if(err) throw err;
+        console.log(result);
+        res.send('Posts fetched..');
+
+    });
+});
+
+//update
+app.get('/updatepost/:id',(req,res) => {
+    let newTitle = 'updated title';
+
+    let sql = `UPDATE posts SET title = '${newTitle}' WHERE id = ${req.params.id}`;
+    let query = db.query(sql, (err, result) => {
+        if(err) throw err;
+        console.log(result);
+        res.send('Posts updated.');
+
+    });
+});
+
+app.get('/deletepost/:id',(req,res) => {
+    let newTitle = 'updated title';
+
+    let sql = `DELETE FROM posts WHERE id = ${req.params.id}`;
+    let query = db.query(sql, (err, result) => {
+        if(err) throw err;
+        console.log(result);
+        res.send('Posts deleted.');
+
+    });
+});
+
+// Retrieve all from registration
+app.get('/registration', function (req, res) {
+    dbConn.query('SELECT * FROM registration', function (error, results, fields) {
+        if (error) throw error;
+        return res.send({ error: false, data: results, message: 'registration list.' });
+    });
+});
+
+
+
+
+
+// Retrieve user with id 
+app.get('/registration/:id', function (req, res) {
+    let registration_id = req.params.id;
+    if (!registration_id) {
+     return res.status(400).send({ error: true, message: 'Please provide registration_id' });
+    }
+    dbConn.query('SELECT * FROM registration where id=?', registration_id, function (error, results, fields) {
+     if (error) throw error;
+      return res.send({ error: false, data: results[0], message: 'registration list.' });
+    });
+});
+
+// Add a new registration
+app.post('/registration', function (req, res) {
+    let registration = req.body.user;
+    if (!registration) {
+      return res.status(400).send({ error:true, message: 'Please provide registration' });
+    }
+   dbConn.query("INSERT INTO registration SET ? ", { registration: registration }, function (error, results, fields) {
+  if (error) throw error;
+    return res.send({ error: false, data: results, message: 'New registration has been created successfully.' });
+    });
+});
+
+//  Update registration with id
+app.put('/registration', function (req, res) {
+    let registration_id = req.body.registration_id;
+    let registration = req.body.registration;
+    if (!registration_id || !registration) {
+      return res.status(400).send({ error: user, message: 'Please provide registration and registration_id' });
+    }
+    dbConn.query("UPDATE registration SET registration = ? WHERE id = ?", [registration, registration_id], function (error, results, fields) {
+      if (error) throw error;
+      return res.send({ error: false, data: results, message: 'registration has been updated successfully.' });
+     });
+    });
+
+    //  Delete registration
+ app.delete('/registration', function (req, res) {
+    let registration_id = req.body.registration_id;
+    if (!registration_id) {
+        return res.status(400).send({ error: true, message: 'Please provide registration_id' });
+    }
+    dbConn.query('DELETE FROM registration WHERE id = ?', [registration_id], function (error, results, fields) {
+        if (error) throw error;
+        return res.send({ error: false, data: results, message: 'registration has been updated successfully.' });
+    });
+    }); 
+
+    /*CORS isn’t enabled on the server, this is due to security reasons by default,
+
+so no one else but the webserver itself can make requests to the server.*/
+
+app.use(function(req, res, next) {
+
+    res.header("Access-Control-Allow-Origin", "*");
+   
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+   
+    next();
+   
+    });
+
+
+
+
+app.listen('3000', () => {
+    console.log('server started on port 3000');
+});
