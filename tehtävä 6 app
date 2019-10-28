@@ -1,0 +1,22 @@
+var express = require('express');
+
+var morgan = require('morgan');
+
+var rndcontroller = require('./controllers/rndcontroller.js');
+
+var app = express();
+
+
+
+var arvottuindeksi = require ('./controllers/rndcontroller.js')
+
+app.use(morgan('combined'))
+
+app.use(express.static('./public'));
+
+rndcontroller(app);
+
+app.listen(3000);
+
+console.log('kuunnellaan porttia 3000');
+
